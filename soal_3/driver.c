@@ -74,5 +74,8 @@ void log_message(char* source, char* command, char* additional_info) {
     if (log_file != NULL) {
         fprintf(log_file, "[%s] [%s]: [%s] [%s]\n", source, time_str, command, additional_info);
         fclose(log_file);
+    } else {
+        perror("log_message: fopen");
+        exit(EXIT_FAILURE);
     }
 }
