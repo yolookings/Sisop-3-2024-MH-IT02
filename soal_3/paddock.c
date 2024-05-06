@@ -42,17 +42,19 @@ void handle_client(int client_socket) {
     int valread;
     char response[1024] = {0};
     
-    // Kirim pesan selamat datang ke driver.c
-    char* welcome_message = "Welcome to Paddock!";
-    send(client_socket, welcome_message, strlen(welcome_message), 0);
-    log_message("Paddock", "Connection established", "");
+    // Kirim pesan selamat datang ke driver.c hanya sekali saat koneksi pertama kali dibuat
+    static int connection_established = 0;
+    if (!connection_established) {
+        char* welcome_message = "Welcome to Paddock!";
+        send(client_socket, welcome_message, strlen(welcome_message), 0);
+        log_message("Paddock", "Connection established", "");
+        connection_established = 1;
+    }
     
     while (1) {
         // Terima pesan dari driver.c
         valread = read(client_socket, buffer, 1024);
         if (valread > 0) {
-            log_message("Driver", buffer, "");
-            
             // Lakukan pemrosesan pesan dan berikan balasan
             char* command = strtok(buffer, " ");
             char* additional_info = strtok(NULL, "\0"); // Mengubah delimiter menjadi NULL untuk mendapatkan keseluruhan additional_info
@@ -80,6 +82,7 @@ void handle_client(int client_socket) {
                 perror("handle_client: send");
                 log_message("Paddock", "Error sending response", "");
             } else {
+                log_message("Driver", buffer, "");
                 log_message("Paddock", response, "");
             }
         } else if (valread == 0) {
@@ -92,6 +95,7 @@ void handle_client(int client_socket) {
         }
     }
 }
+
 
 int main() {
     int server_fd, client_socket;

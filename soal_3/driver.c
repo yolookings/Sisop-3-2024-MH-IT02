@@ -22,6 +22,9 @@ int main(int argc, char *argv[]) {
     char* command = argv[2];
     char* info = argv[4];
     
+    // Log pesan ke file
+        log_message("Driver", command, info);
+
     // Koneksi ke server paddock
     int sock = 0;
     struct sockaddr_in serv_addr;
@@ -51,12 +54,12 @@ int main(int argc, char *argv[]) {
     sprintf(message, "%s %s", command, info);
     send(sock , message , strlen(message) , 0 );
     
-    // Terima balasan dari server paddock
-    read(sock , buffer, 1024);
-    printf("%s\n", buffer);
-    
-    // Log pesan ke file
-    log_message("Driver", command, info);
+    // Hanya log pesan ke file jika pesan bukan merupakan balasan dari server
+    if (strcmp(command, "Fuel") != 0 || strcmp(info, "55%") != 0) {
+        // Terima balasan dari server paddock
+        read(sock , buffer, 1024);
+        printf("%s\n", buffer);
+    }
     
     return 0;
 }
