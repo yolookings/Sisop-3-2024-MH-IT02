@@ -8,7 +8,48 @@
 
 #define SHMSZ 1024
 
+void createDirectory(const char *path) {
+    if (mkdir(path, 0777) == -1) {
+        perror("mkdir");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void createFile(const char *path) {
+    FILE *file = fopen(path, "w");
+    if (file == NULL) {
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+    fclose(file);
+}
+
 int main() {
+    // Membuat direktori new-data jika belum ada
+    createDirectory("new-data");
+    createFile("new-data/belobog_trashcan.csv");
+    createFile("new-data/ikn.csv");
+    createFile("new-data/osaka_parkinglot.csv");
+
+    // Membuat direktori microservices/database jika belum ada
+    createDirectory("microservices");
+    createDirectory("microservices/database");
+
+    // Membuat file db.log jika belum ada
+    createFile("microservices/database/db.log");
+    
+    // Memindahkan file db.c ke dalam folder microservices
+    if (rename("db.c", "microservices/db.c") == -1) {
+        perror("rename");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Memindahkan file rate.c ke dalam folder microservices
+    if (rename("rate.c", "microservices/rate.c") == -1) {
+        perror("rename");
+        exit(EXIT_FAILURE);
+    }
+
     DIR *dir;
     struct dirent *ent;
     struct stat st;

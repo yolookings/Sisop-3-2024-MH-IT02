@@ -19,7 +19,7 @@ int main() {
     struct Location bestTrashCan, bestParkingLot;
 
     // Mendapatkan kunci untuk shared memory yang sama
-    if ((key = ftok("../../auth.c", 'R')) == -1) {
+    if ((key = ftok("../auth.c", 'R')) == -1) {
         perror("ftok");
         exit(1);
     }
