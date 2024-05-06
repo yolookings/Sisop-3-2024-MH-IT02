@@ -79,6 +79,25 @@ int main(int argc, char *argv[]) {
     else if (strcmp(operator, "-kurang") == 0) {
       strcpy(operatorStr, "KURANG");
       strcpy(operator1, "kurang");
+
+      // Periksa apakah hasil pengurangan < 0
+      if (hasil < 0) {
+        char message[1024];
+        sprintf(message, "[%02d/%02d/%02d %02d:%02d:%02d] [%s] ERROR pada pengurangan\n",
+                tm->tm_mday, tm->tm_mon + 1, tm->tm_year % 100, tm->tm_hour, tm->tm_min, tm->tm_sec,
+                operatorStr);
+
+        // Menulis message log ke file
+        int logFile = open("histori.log", O_WRONLY | O_APPEND | O_CREAT, 0644);
+        if (logFile == -1) {
+          perror("Error membuka/membuat file log");
+          exit(1);
+        }
+        write(logFile, message, strlen(message));
+        close(logFile);
+
+        exit(0); // Keluar dari program
+      }
     }
     else if (strcmp(operator, "-bagi") == 0) {
       strcpy(operatorStr, "BAGI");
