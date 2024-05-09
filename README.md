@@ -302,8 +302,6 @@ gambar diatas menampilkan saat program db. dijalankan dan kemudian akan memindah
 ![alt text](images/image-4.png)
 gambar diatas menampilkan catatan log dari file db.log yang mencatat hasil dari dijalankannya program ./db
 
-sekian terimakasih :) .
-
 ## Dokumentasi
 
 ![alt text](images/image.png)
@@ -311,6 +309,8 @@ merupakan gambaran awal direktori
 
 ![alt text](images/image-5.png)
 merupakan gambaran akhir direktori
+
+sekian terimakasih :) .
 
 # Soal 2
 
