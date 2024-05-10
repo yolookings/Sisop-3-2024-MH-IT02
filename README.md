@@ -315,6 +315,7 @@ sekian terimakasih :) .
 # Soal 2
 
 ## Deskripsi Soal
+Pada soal ini kita diminta untuk membuat kalkulator perkalian, penjumlahan, pengurangan, dan pembagian sederhana dari satu sampai sembilan. Kemudian program diberi nama dudududu.c dan hasil dari setiap perhitungan dicatat dalam sebuah log yang diberi nama histori.log
 
 ## Pengerjaan
 
