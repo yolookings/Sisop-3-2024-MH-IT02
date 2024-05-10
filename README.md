@@ -322,7 +322,235 @@ sekian terimakasih :) .
 
 ## Deskripsi Soal
 
+Shall Leglerg🥶 dan Carloss Signs 😎 adalah seorang pembalap F1 untuk tim Ferrari 🥵. Mobil F1 memiliki banyak pengaturan, seperti penghematan ERS, Fuel, Tire Wear dan lainnya. Pada minggu ini ada race di sirkuit Silverstone. Malangnya, seluruh tim Ferrari diracun oleh Super Max Max pada hari sabtu sehingga seluruh kru tim Ferrari tidak bisa membantu Shall Leglerg🥶 dan Carloss Signs 😎 dalam race. Namun, kru Ferrari telah menyiapkan program yang bisa membantu mereka dalam menyelesaikan race secara optimal. Program yang dibuat bisa mengatur pengaturan - pengaturan dalam mobil F1 yang digunakan dalam balapan.
+
 ## Pengerjaan
+
+dalam pengerjaan kali ini menggunakan shared memory yang terdiri dari clients dan server, dan terdiri dari 4 buah file yakni :
+
+- paddock.c (sebagai server)
+- driver.c (sebagai client)
+- actions.c (sebagai tempat fungsi)
+- action.h (sebagai pemanggil fungsi)
+
+untuk saat ini, kita mulai dari actions.c :
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include "action.h"
+
+// Fungsi untuk menentukan aksi berdasarkan jarak dengan musuh di depan
+char* Gap(float distance) {
+    if (distance < 3.5) {
+        return "Gogogo";
+    } else if (distance >= 3.5 && distance <= 10) {
+        return "Push";
+    } else {
+        return "Stay out of trouble";
+    }
+}
+
+// Fungsi untuk menentukan aksi berdasarkan sisa bensin
+char* Fuel(float fuel_percentage) {
+    if (fuel_percentage > 80) {
+        return "Push Push Push";
+    } else if (fuel_percentage >= 50 && fuel_percentage <= 80) {
+        return "You can go";
+    } else {
+        return "Conserve Fuel";
+    }
+}
+
+// Fungsi untuk menentukan aksi berdasarkan sisa pemakaian ban
+char* Tire(int tire_usage) {
+    if (tire_usage > 80) {
+        return "Go Push Go Push";
+    } else if (tire_usage >= 50 && tire_usage <= 80) {
+        return "Good Tire Wear";
+    } else if (tire_usage >= 30 && tire_usage < 50) {
+        return "Conserve Your Tire";
+    } else {
+        return "Box Box Box";
+    }
+}
+
+// Fungsi untuk menentukan aksi berdasarkan tipe ban saat ini
+char* TireChange(char* current_tire_type) {
+    if (strcmp(current_tire_type, "Soft") == 0) {
+        return "Mediums Ready";
+    } else if (strcmp(current_tire_type, "Medium") == 0) {
+        return "Box for Softs";
+    } else {
+        return "Invalid tire type";
+    }
+}
+
+```
+
+pada kode program diatas merupakan daftar dari fungsi terkait dengan perlombaan yang nantinya akan berfungsi sebagai jawaban dari permintaan client.
+
+beriktunya yakni action.h:
+
+```h
+#ifndef ACTION_H
+#define ACTION_H
+
+// Deklarasi fungsi-fungsi yang akan digunakan
+char* Gap(float distance);
+char* Fuel(float fuel_percentage);
+char* Tire(int tire_usage);
+char* TireChange(char* current_tire_type);
+
+#endif /* ACTION_H */
+
+```
+
+kode diatas merupakan sarana pemanggilan fungsi yang menghubungkan antara paddock.c dan actions.c sehingga dapat lebih efisien dan terstruktur dalam proses pengiriman masukan maupun jawaban dari client.
+
+berikutnya merupakan server, yakni fungsi paddock.c :
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <time.h>
+#include "../actions.c"
+#include "../action.h"
+
+#define PORT 8080
+#define LOG_FILE "race.log"
+
+// Fungsi untuk melakukan logging ke file race.log
+void log_message(char* source, char* command, char* input, char* output) {
+    time_t current_time;
+    struct tm* time_info;
+    char time_str[20];
+
+    time(&current_time);
+    time_info = localtime(&current_time);
+    strftime(time_str, sizeof(time_str), "%d/%m/%Y %H:%M:%S", time_info);
+
+    FILE* log_file = fopen(LOG_FILE, "a");
+    if (log_file != NULL) {
+        fprintf(log_file, "[%s] [%s]: [%s] [%s]\n", source, time_str, command, output);
+        fclose(log_file);
+    } else {
+        perror("log_message: fopen");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
+// Fungsi untuk menangani koneksi dari driver.c
+void handle_client(int client_socket) {
+    char buffer[1024] = {0};
+    int valread;
+    char response[1024] = {0};
+
+    while (1) {
+        // Terima pesan dari driver.c
+        valread = read(client_socket, buffer, 1024);
+        if (valread > 0) {
+            // Lakukan pemrosesan pesan dan berikan balasan
+            char* command = strtok(buffer, " ");
+            char* additional_info = strtok(NULL, "\0"); // Mengubah delimiter menjadi NULL untuk mendapatkan keseluruhan additional_info
+            if (command != NULL && additional_info != NULL) {
+                if (strcmp(command, "Fuel") == 0) {
+                    float fuel_percentage = atof(additional_info);
+                    strcpy(response, Fuel(fuel_percentage));
+                } else if (strcmp(command, "Gap") == 0) {
+                    float distance = atof(additional_info);
+                    strcpy(response, Gap(distance));
+                } else if (strcmp(command, "Tire") == 0) {
+                    int tire_usage = atoi(additional_info);
+                    strcpy(response, Tire(tire_usage));
+                } else if (strcmp(command, "TireChange") == 0) {
+                    strcpy(response, TireChange(additional_info));
+                } else {
+                    strcpy(response, "Invalid command");
+                }
+            } else {
+                strcpy(response, "Error: Invalid message format");
+            }
+
+            // Kirim balasan ke driver.c
+            if (send(client_socket, response, strlen(response), 0) < 0) {
+                perror("handle_client: send");
+            } else {
+                // Catat pesan ke log file
+                log_message("Paddock", command, additional_info, response);
+            }
+        } else if (valread == 0) {
+            // Koneksi ditutup oleh driver.c
+            break;
+        } else {
+            perror("handle_client: read");
+            break;
+        }
+    }
+}
+
+int main() {
+    int server_fd, client_socket;
+    struct sockaddr_in address;
+    int opt = 1;
+    int addrlen = sizeof(address);
+
+    // Membuat socket file descriptor
+    int sock;
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Socket creation error");
+        return -1;
+    }
+
+    // Menetapkan opsi socket
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+    // Binding socket ke alamat dan port tertentu
+    if (bind(sock, (struct sockaddr *)&address, sizeof(address))<0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Menandai socket untuk mendengarkan koneksi
+    if (listen(sock, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    // Menerima koneksi dari driver.c
+    while (1) {
+        if ((client_socket = accept(sock, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+        // Handle koneksi dari driver.c
+        handle_client(client_socket);
+        close(client_socket);
+    }
+    return 0;
+}
+```
+
+program diatas berisi kode yang berisi server dari si client, jadi kode diatas memiliki fungsi untuk menghandle clients dan juga membuat log dan mencatatnya, serta menerima masukan dari clients yang kemudian akan memberikan jawaban setelah mendapatkan info dari action.h
+
+## Dokumentasi
+
+![alt text](image-7.png)
+gambar tersebut merupakan daftar direktori untuk menjalankan soal nomor 3, terdapat driver.c merupakan client dan paddock.c sebagai server.
 
 # Soal 4
 
