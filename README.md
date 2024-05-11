@@ -501,8 +501,9 @@ Fungsi ini bertugas untuk mengonversi angka menjadi bentuk kata. Misalnya, 5 aka
 
 ## Dokumentasi
 
+![alt text](images/soal2.jpg)
 Hasil saat menjalanlan program sebelum revisi
-
+![alt text](images/soal2_rev.jpg)
 Hasil saat menjalankan program setelah revisi
 
 # Soal 3
