@@ -318,6 +318,186 @@ sekian terimakasih :) .
 Pada soal ini kita diminta untuk membuat kalkulator perkalian, penjumlahan, pengurangan, dan pembagian sederhana dari satu sampai sembilan. Kemudian program diberi nama dudududu.c dan hasil dari setiap perhitungan dicatat dalam sebuah log yang diberi nama histori.log
 
 ## Pengerjaan
+```c 
+  // Membuat pipes
+  int fd1[2], fd2[2];
+  if (pipe(fd1) == -1 || pipe(fd2) == -1) {
+    perror("Error membuat pipe");
+    exit(1);
+  }
+```
+Pipe pertama digunakan untuk mengirim data dari parent process ke child process, sedangkan pipe kedua digunakan untuk mengirim data dari child process ke parent process.
+
+```c
+  pid_t pid;
+  pid = fork();
+  if (pid == -1) {
+    perror("Error forking");
+    exit(1);
+  }
+```
+Proses ini melakukan fork untuk membuat child process. Setelah fork, child process akan memiliki identitas proses yang berbeda dari parent process, tetapi akan memiliki salinan yang sama dari kode program.
+
+```c
+  // Parent process
+  if (pid > 0) {
+    // Menutup deskriptor pipa yang tidak digunakan
+    close(fd1[0]);
+    close(fd2[1]);
+
+    // Mengirim angka ke child process melalui pipe
+    write(fd1[1], &angka1, sizeof(angka1));
+    write(fd1[1], &angka2, sizeof(angka2));
+
+    // Menerima hasil kalkulasi dari child process
+    int hasil;
+    read(fd2[0], &hasil, sizeof(hasil));
+```
+`close`: Dalam pipe fd1, parent process menutup ujung pembaca fd1[0], sedangkan dalam pipe fd2, parent process menutup ujung penulis fd2[1]
+`write`: parent process menulis data angka1 dan angka2 ke pipe fd1
+`read`: parent process membaca hasil kalkulasi dari child process melalui pipe fd2
+
+```c
+    // Get current time
+    time_t now = time(NULL);
+    struct tm *tm = localtime(&now);
+```
+Proses ini mengambil waktu saat ini menggunakan fungsi `time()`, kemudian konversi ke dalam struktur waktu lokal menggunakan fungsi `localtime()`
+
+```c
+    // Format message
+    char operatorStr[20], operator1[20];
+```
+Variabel `operatorStr` dan `operator1` digunakan untuk menyimpan string yang sesuai dengan operator yang diberikan.
+
+```c
+    // Menerima angka dari parent process
+    int angka1, angka2;
+    read(fd1[0], &angka1, sizeof(angka1));
+    read(fd1[0], &angka2, sizeof(angka2));
+```
+`read`: child process membaca angka1 dan angka2 dari pipe fd1 menggunakan
+
+```c
+    // Melakukan kalkulasi
+    int hasil;
+    if (strcmp(operator, "-kali") == 0)
+      hasil = angka1 * angka2;
+    else if (strcmp(operator, "-tambah") == 0)
+      hasil = angka1 + angka2;
+    else if (strcmp(operator, "-kurang") == 0)
+      hasil = angka1 - angka2;
+    else if (strcmp(operator, "-bagi") == 0) {
+      if (angka2 == 0) {
+        printf("Error: Pembagian dengan nol tidak diizinkan.\n");
+        exit(1);
+      }
+      hasil = angka1 / angka2;
+    }
+    else {
+      printf("Error: Operator tidak valid.\n");
+      exit(1);
+    }
+```
+Kode ini adalah bagian dari proses di mana program melakukan kalkulasi berdasarkan operator yang diberikan dan variabel `hasil` akan menyimpan hasil kalkulasi
+
+```c
+    // Mengirim hasil kalkulasi ke parent process melalui pipe
+    write(fd2[1], &hasil, sizeof(hasil));
+```
+`write`: child process menulis hasil kalkulasi ke pipe fd2
+
+```c
+int konversiStringKeAngka(char *str) {
+  if (strcmp(str, "nol") == 0) return 0;
+  else if (strcmp(str, "satu") == 0) return 1;
+  else if (strcmp(str, "dua") == 0) return 2;
+  else if (strcmp(str, "tiga") == 0) return 3;
+  else if (strcmp(str, "empat") == 0) return 4;
+  else if (strcmp(str, "lima") == 0) return 5;
+...
+  else if (strcmp(str, "tujuh puluh") == 0) return 70;
+  else if (strcmp(str, "delapan puluh") == 0) return 80;
+  else if (strcmp(str, "sembilan puluh") == 0) return 90;
+  else {
+    printf("ERROR: Input tidak valid.\n");
+    exit(1);
+  }
+}
+```
+Fungsi ini bertanggung jawab untuk mengubah string yang mewakili angka dalam bentuk kata menjadi nilai angka yang sesuai. Ini dilakukan dengan memeriksa string yang diberikan (`str`) dengan daftar kata-kata yang dikenali, seperti "satu", "dua", "tiga", dan seterusnya. Jika string cocok dengan salah satu kata kunci, fungsi akan mengembalikan nilai integer yang sesuai. Jika tidak ada kata kunci yang cocok, maka program akan mencetak pesan kesalahan bahwa input tidak valid
+
+```c
+int kalkulasi(int angka1, int angka2, char *operator) {
+  if (strcmp(operator, "-kali") == 0)
+    return angka1 * angka2;
+  else if (strcmp(operator, "-tambah") == 0)
+    return angka1 + angka2;
+  else if (strcmp(operator, "-kurang") == 0)
+    return angka1 - angka2;
+  else if (strcmp(operator, "-bagi") == 0) {
+    if (angka2 == 0) {
+      printf("ERROR: Pembagian dengan nol tidak diizinkan.\n");
+      exit(1);
+    }
+    return angka1 / angka2;
+  } else {
+    printf("ERROR: Operator tidak valid.\n");
+    exit(1);
+  }
+}
+```
+Fungsi ini menerima dua bilangan bulat (`angka1` dan `angka2`) dan sebuah string operator. Berdasarkan operator yang diberikan (`operator`), fungsi ini melakukan operasi aritmatika yang sesuai pada kedua bilangan tersebut. Jika operator adalah "-kali", hasil perkalian dari `angka1` dan `angka2` akan dikembalikan. Jika operator adalah "-tambah", hasil penjumlahan dari `angka1` dan `angka2` akan dikembalikan. Jika operator adalah "-kurang", hasil pengurangan dari `angka1` dan `angka2` akan dikembalikan. Jika operator adalah "-bagi", fungsi ini akan memeriksa apakah pembagian dengan nol terjadi. Jika terjadi, fungsi akan mencetak pesan kesalahan bahwa pembagian dengan nol tidak diizinkan dan keluar dengan status keluar 1. Jika operator tidak valid, fungsi juga akan mencetak pesan kesalahan
+
+```c
+char *konversiAngkaKeKalimat(int angka) {
+  char *kalimat = (char *)malloc(100 * sizeof(char)); // alokasi memori awal untuk string hasil
+  if (kalimat == NULL) {
+    printf("ERROR: Gagal mengalokasi memori.\n");
+    exit(1);
+  }
+
+  switch (angka) {
+    // kasus-kasus sebelum 20
+    case 0:
+      strcpy(kalimat, "nol");
+      break;
+    case 1:
+      strcpy(kalimat, "satu");
+      break;
+    case 2:
+      kalimat = "dua";
+      break;
+    case 3:
+      kalimat = "tiga";
+      break;
+    case 4:
+      kalimat = "empat";
+      break;
+    case 5:
+      kalimat = "lima";
+      break;
+...
+    case 70:
+      strcpy(kalimat, "tujuh puluh");
+      break;
+    case 80:
+      strcpy(kalimat, "delapan puluh");
+      break;
+    case 90:
+      strcpy(kalimat, "sembilan puluh");
+      break;
+    default:
+      if (angka > 20 && angka < 100) {
+        strcpy(kalimat, konversiAngkaKeKalimat((angka / 10) * 10)); // puluhan
+        strcat(kalimat, " ");
+        strcat(kalimat, konversiAngkaKeKalimat(angka % 10)); // satuan
+      } else {
+        strcpy(kalimat, "tidak diketahui");
+      }
+  }
+```
+Fungsi ini bertugas untuk mengonversi angka menjadi bentuk kata. Misalnya, 5 akan dikonversi menjadi "lima", 25 akan dikonversi menjadi "dua puluh lima", dan seterusnya. Fungsi ini menggunakan konstruksi switch-case untuk menangani beberapa kasus khusus (angka dari 0 hingga 19 dan beberapa angka khusus seperti 20, 30, dst.) dengan langsung menempelkan kata yang sesuai ke dalam string yang dikembalikan. Untuk angka lebih besar dari 20, fungsi ini menggunakan rekursi dengan memanggil dirinya sendiri untuk mengonversi angka puluhan dan sisa satuan, kemudian menggabungkan keduanya dengan satu spasi di antara. Jika angka yang diberikan tidak dapat dikonversi, fungsi ini mengembalikan string "tidak diketahui".
 
 # Soal 3
 
