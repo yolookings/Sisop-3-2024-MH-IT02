@@ -353,9 +353,9 @@ Proses ini melakukan fork untuk membuat child process. Setelah fork, child proce
     int hasil;
     read(fd2[0], &hasil, sizeof(hasil));
 ```
-`close`: Dalam pipe fd1, parent process menutup ujung pembaca fd1[0], sedangkan dalam pipe fd2, parent process menutup ujung penulis fd2[1]
-`write`: parent process menulis data angka1 dan angka2 ke pipe fd1
-`read`: parent process membaca hasil kalkulasi dari child process melalui pipe fd2
+- `close`: Dalam pipe fd1, parent process menutup ujung pembaca fd1[0], sedangkan dalam pipe fd2, parent process menutup ujung penulis fd2[1]
+- `write`: parent process menulis data angka1 dan angka2 ke pipe fd1
+- `read`: parent process membaca hasil kalkulasi dari child process melalui pipe fd2
 
 ```c
     // Get current time
@@ -376,7 +376,7 @@ Variabel `operatorStr` dan `operator1` digunakan untuk menyimpan string yang ses
     read(fd1[0], &angka1, sizeof(angka1));
     read(fd1[0], &angka2, sizeof(angka2));
 ```
-`read`: child process membaca angka1 dan angka2 dari pipe fd1 menggunakan
+- `read`: child process membaca angka1 dan angka2 dari pipe fd1 menggunakan
 
 ```c
     // Melakukan kalkulasi
@@ -405,7 +405,7 @@ Kode ini adalah bagian dari proses di mana program melakukan kalkulasi berdasark
     // Mengirim hasil kalkulasi ke parent process melalui pipe
     write(fd2[1], &hasil, sizeof(hasil));
 ```
-`write`: child process menulis hasil kalkulasi ke pipe fd2
+- `write`: child process menulis hasil kalkulasi ke pipe fd2
 
 ```c
 int konversiStringKeAngka(char *str) {
