@@ -856,7 +856,7 @@ sekian dan terimakasih :).
 Soal ini meminta kita untuk membuat CRUD yang dapat menambahkan, menghapus list anime berdasarkan hari maupun judul. 
 
 ## Pengerjaan
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -869,7 +869,7 @@ Soal ini meminta kita untuk membuat CRUD yang dapat menambahkan, menghapus list 
 #define BUFFER_SIZE 1024
 ```
 Program ini menggunakan header file standar seperti stdio.h untuk input/output, stdlib.h untuk fungsi standar library, string.h untuk manipulasi string, sys/socket.h untuk fungsi socket, netinet/in.h untuk struktur data network, arpa/inet.h untuk fungsi konversi network address, dan unistd.h untuk fungsi terkait sistem operasi Unix.
-```
+```c
 int main() {
   int serverSocket;
   struct sockaddr_in serverAddress;
@@ -890,7 +890,7 @@ int main() {
   char *logMassage;
 ```
  Diawali dengan deklarasi variabel yang dibutuhkan seperti serverSocket untuk socket server, serverAddress untuk menyimpan informasi alamat server, buffer untuk penampung data yang dikirim dan diterima, len untuk menyimpan panjang data, read untuk menyimpan hasil pembacaan data, serta beberapa variabel pointer untuk menampung hasil parsing data command dan informasi anime.
- ```
+ ```c
   // Membuat socket
   serverSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (serverSocket < 0) {
