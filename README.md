@@ -499,6 +499,13 @@ char *konversiAngkaKeKalimat(int angka) {
 ```
 Fungsi ini bertugas untuk mengonversi angka menjadi bentuk kata. Misalnya, 5 akan dikonversi menjadi "lima", 25 akan dikonversi menjadi "dua puluh lima", dan seterusnya. Fungsi ini menggunakan konstruksi switch-case untuk menangani beberapa kasus khusus (angka dari 0 hingga 19 dan beberapa angka khusus seperti 20, 30, dst.) dengan langsung menempelkan kata yang sesuai ke dalam string yang dikembalikan. Untuk angka lebih besar dari 20, fungsi ini menggunakan rekursi dengan memanggil dirinya sendiri untuk mengonversi angka puluhan dan sisa satuan, kemudian menggabungkan keduanya dengan satu spasi di antara. Jika angka yang diberikan tidak dapat dikonversi, fungsi ini mengembalikan string "tidak diketahui".
 
+## Dokumentasi
+
+![alt text](images/soal2.jpg)
+Hasil saat menjalanlan program sebelum revisi
+
+Hasil saat menjalankan program setelah revisi
+
 # Soal 3
 
 ## Deskripsi Soal
